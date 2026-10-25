@@ -3,7 +3,10 @@
   <p>Une application de bureau open source permettant de tester la connectivité réseau grâce aux requêtes ping.</p>
 
   <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge" alt="Version 1.0.0">
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="Licence MIT">
+  
+  <a href="https://github.com/TON-PSEUDO/PyPing/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="Licence MIT">
+  </a>
 </div>
 
 ## Technologies utilisées
