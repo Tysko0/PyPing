@@ -1,6 +1,8 @@
 import platform, re, subprocess, threading, time
 
 class PingServices:
+    MAX_FAILURES = 3
+
     def __init__(self):
         self.stop_event = threading.Event()
         self.worker = None
@@ -39,49 +41,63 @@ class PingServices:
 
     def _run(self, host, interval, callback):
         windows = platform.system().lower() == "windows"
+        failures = 0
+        reason = "stopped"
 
-        while not self.stop_event.is_set():
-            started = time.perf_counter()
+        try:
+            while not self.stop_event.is_set():
+                started = time.perf_counter()
 
-            command = (
-                ["ping", "-n", "1", "-w", "1500", host]
-                if windows
-                else ["ping", "-c", "1", "-W", "2", host]
-            )
-
-            try: 
-                result = subprocess.run(
-                    command,
-                    capture_output=True,
-                    text=True,
-                    errors="replace",
-                    timeout=4,
-                    check=False
+                command = (
+                    ["ping", "-n", "1", "-w", "1000", host]
+                    if windows
+                    else ["ping", "-c", "1", "-W", "1", host]
                 )
 
-                output = (result.stdout or "") + "\n" + (result.stderr or "")
-                success = result.returncode == 0
-                latency = (self.extract_latency(output) if success else None)
+                try:
+                    result = subprocess.run(
+                        command,
+                        capture_output=True,
+                        text=True,
+                        errors="replace",
+                        timeout=3,
+                        check=False,
+                    )
 
-                if success and latency is None:
-                    latency = round((time.perf_counter() - started) * 1000, 2)
+                    output = ((result.stdout or "") + "\n" + (result.stderr or ""))
+                    success = result.returncode == 0
+                    latency = (self.extract_latency(output) if success else None)
+
+                    if success and latency is None:
+                        latency = round((time.perf_counter() - started) * 1000, 2,)
+
+                    message = ("Réponse reçue" if success else "Aucune réponse")
+
+                except (OSError, subprocess.SubprocessError) as exc:
+                    success = False
+                    latency = None
+                    message = f"Erreur : {type(exc).__name__}"
 
                 callback({
                     "success": success,
                     "latency": latency,
-                    "message": ( "Réponse reçue" if success else "Délai dépassé ou échec du ping" ),
+                    "message": message,
                 })
 
-            except (OSError, subprocess.SubprocessError) as exc:
-                callback({
-                    "success": False,
-                    "latency": None,
-                    "message": f"Erreur : {type(exc).__name__}",
-                })
+                if success:
+                    failures = 0
+                else:
+                    failures += 1
 
-            self.stop_event.wait(interval)
+                if failures >= self.MAX_FAILURES:
+                    reason = "inactive"
+                    break
 
-        callback({"type": "stopped"})
+                if self.stop_event.wait(interval):
+                    break
+
+        finally:
+            callback({"type": "stopped", "reason": reason})
 
     def stop(self):
         self.stop_event.set()
