@@ -23,6 +23,8 @@
 - Mesure de la latence en millisecondes.
 - Démarrage et arrêt du test à tout moment.
 - Interface graphique sombre et minimaliste.
+- Détection automatique d'un hôte inactif après 3 échecs consécutifs
+- Statistiques : paquets envoyés, reçus, perdus et latences min./moy./max.
 - Compatibilité Windows et Linux.
 
 ## Installation
@@ -37,6 +39,7 @@
 ```bash
 git clone https://github.com/Tysko0/PyPing.git
 cd PyPing
+pip install -r requirements.txt
 ```
 
 ### Lancer l'application
@@ -61,9 +64,11 @@ PyPing/
 ├── components/
 │   ├── __init__.py
 │   ├── home.py
+│   ├── stats.py
 │   └── ping.py
 └── services/
     ├── __init__.py
+    ├── stats.py
     └── ping.py
 ```
 
@@ -73,4 +78,5 @@ Ce projet est distribué sous licence MIT. Consulte le fichier `LICENSE` pour pl
 
 ## Auteur
 
-Développé par Tysko 
+Développé par Tysko ---
+*
