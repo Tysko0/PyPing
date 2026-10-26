@@ -78,5 +78,4 @@ Ce projet est distribué sous licence MIT. Consulte le fichier `LICENSE` pour pl
 
 ## Auteur
 
-Développé par Tysko ---
-*
+Développé par Tysko
